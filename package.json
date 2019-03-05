@@ -1,0 +1,10 @@
+{
+  "name": "nodesweeper",
+  "version": "1.0.0",
+  "description": "Console minewsweeper",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  }
+}
