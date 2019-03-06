@@ -1,3 +1,5 @@
+const readLineSync = require('readline-sync')
+
 const buildGrid = (size) => {
     const ret = []
     for (let i = 0; i < size; i++) {
@@ -10,15 +12,20 @@ const buildGrid = (size) => {
     return ret
 }
 
-function Grid(size) {
+function Game(size) {
+    this.currentCell = [0, 0]
     this.grid = buildGrid(size)
 
     this.toString = () => {
         let ret = ""
         for (let row = 0; row < this.grid.length; row++) {
             for (let col = 0; col < this.grid.length; col++) {
-                let char = this.grid[row][col] ? '*' : '.'
-                ret += char
+                if (row === this.currentCell[0] && col === this.currentCell[1]) {
+                    ret += "X"
+                } else {
+                    let char = this.grid[row][col] ? '*' : '.'
+                    ret += char
+                }
             }
             ret += '\n'
         }
@@ -26,6 +33,13 @@ function Grid(size) {
     }
 }
 
-const g = new Grid(5)
+const g = new Game(10)
 
 console.log('Welcome to minesweeper.\nGrid:\n' + g)
+// W - up
+// A - left
+// D - right
+// S - down
+// F - flag
+// R - reveal
+pressedKey = readLineSync.keyIn('Command: ', { limit: 'adfrsw' })
