@@ -50,11 +50,12 @@ function Game(size, numMines) {
         neighbors.forEach(pair => {
             const xOffset = row + pair[0]
             const yOffset = col + pair[1]
-            const maxIdx = this.grid.length - 1
 
             // don't check if out of bounds
-            if (xOffset < 0 || xOffset > maxIdx || yOffset < 0 || yOffset > maxIdx) {
-                if (this.grid[xOffset][yOffset].mine) ret += 1
+            if (this.grid[xOffset] !== undefined) {
+                if (this.grid[xOffset][yOffset] !== undefined) {
+                    if (this.grid[xOffset][yOffset].mine) ret += 1
+                }
             }
         })
         return ret
