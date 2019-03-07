@@ -54,13 +54,13 @@ function Game(size, numMines) {
             [-1, -1]
         ]
         neighbors.forEach(pair => {
-            const xOffset = row + pair[0]
-            const yOffset = col + pair[1]
+            const rowOffset = row + pair[0]
+            const colOffset = col + pair[1]
 
             // don't check if out of bounds
-            if (this.grid[xOffset] !== undefined) {
-                if (this.grid[xOffset][yOffset] !== undefined) {
-                    if (this.grid[xOffset][yOffset].mine) ret += 1
+            if (this.grid[rowOffset] !== undefined) {
+                if (this.grid[rowOffset][colOffset] !== undefined) {
+                    if (this.grid[rowOffset][colOffset].mine) ret += 1
                 }
             }
         })
@@ -80,32 +80,37 @@ function Game(size, numMines) {
 
             // if we revealed a 0, call reveal on each neighbor
             if (this.getNeighbors(row, col) === 0) {
-                const neighbors = [
-                    [1, 1],
-                    [1, 0],
-                    [1, -1],
-                    [0, 1],
-                    [0, -1],
-                    [-1, 0],
-                    [-1, 1],
-                    [-1, -1]
-                ]
-                neighbors.forEach(pair => {
-                    const xOffset = row + pair[0]
-                    const yOffset = col + pair[1]
-
-                    // don't check if out of bounds
-                    if (this.grid[xOffset] !== undefined) {
-                        if (this.grid[xOffset][yOffset] !== undefined) {
-                            this.reveal(xOffset, yOffset)
-                        }
-                    }
-                })
+                this.revealNeighbors(row, col)
             }
         }
     }
 
-    // for debug only
+    this.revealNeighbors = function (row, col) {
+        const neighbors = [
+            [1, 1],
+            [1, 0],
+            [1, -1],
+            [0, 1],
+            [0, -1],
+            [-1, 0],
+            [-1, 1],
+            [-1, -1]
+        ]
+        neighbors.forEach(pair => {
+            const rowOffset = row + pair[0]
+            const colOffset = col + pair[1]
+
+            // don't check if out of bounds
+            if (this.grid[rowOffset] !== undefined) {
+                if (this.grid[rowOffset][colOffset] !== undefined) {
+                    console.log(rowOffset + ', ' + colOffset)
+                    this.reveal(rowOffset, colOffset)
+                }
+            }
+        })
+    }
+
+    // for debug/endgame
     this.revealAll = function () {
         for (let row = 0; row < this.grid.length; row++) {
             for (let col = 0; col < this.grid.length; col++) {
