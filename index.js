@@ -1,7 +1,7 @@
 const readLineSync = require('readline-sync')
 
 const buildGrid = (size, numMines) => {
-    const ret = []
+    let ret = []
     for (let i = 0; i < size; i++) {
         const row = []
         for (let j = 0; j < size; j++) {
@@ -16,11 +16,18 @@ const buildGrid = (size, numMines) => {
 // takes a 2d array of cells and plants the given number of mines
 // TODO handle collisions - if current = mine, find new cell
 const plantMines = (grid, numMines) => {
+    console.log('laying ' + numMines + ' mines')
+    const max = grid.length
     for (let i = 0; i < numMines; i++) {
-        const randX = Math.floor(Math.random() + 1) * grid.length - 1
-        const randY = Math.floor(Math.random() + 1) * grid.length - 1
+        const randX = getRandomInt(max)
+        const randY = getRandomInt(max)
+        console.log('laying (' + randX + ', ' + randY + ')')
         grid[randX][randY].mine = true
     }
+}
+
+const getRandomInt = (max) => {
+    return Math.floor(Math.random() * Math.floor(max))
 }
 
 function Game(size, numMines) {
