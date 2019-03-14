@@ -30,6 +30,11 @@ const getRandomInt = (max) => {
     return Math.floor(Math.random() * Math.floor(max))
 }
 
+// assumes a square grid
+const getRandomCoords = (max) => {
+    return [getRandomInt]
+}
+
 function Game(size, numMines) {
     this.currentCell = { row: 0, col: 0 }
     this.grid = buildGrid(size, numMines)
