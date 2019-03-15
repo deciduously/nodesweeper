@@ -21,7 +21,7 @@ const plantMines = (grid, numMines) => {
     for (let i = 0; i < numMines; i++) {
         const randX = getRandomInt(max)
         const randY = getRandomInt(max)
-        console.log('laying (' + randX + ', ' + randY + ')')
+        //console.log('laying (' + randX + ', ' + randY + ')')
         grid[randX][randY].mine = true
     }
 }
@@ -30,17 +30,21 @@ const getRandomInt = (max) => {
     return Math.floor(Math.random() * Math.floor(max))
 }
 
-// assumes a square grid
-const getRandomCoords = (max) => {
-    return [getRandomInt]
-}
-
 function Game(size, numMines) {
+    this.size = size
+    this.numMines = numMines
     this.currentCell = { row: 0, col: 0 }
     this.grid = buildGrid(size, numMines)
 
+    this.checkWin() = function () {
+        // TODO YOU'RE HERE
+    }
+
     this.loseGame = function () {
         this.revealAll()
+        console.clear()
+        console.log(this.toString())
+        console.log('YOU LOSE')
         process.exit()
     }
 
@@ -48,7 +52,22 @@ function Game(size, numMines) {
     this.flag = function () {
         const row = this.currentCell.row
         const col = this.currentCell.col
-        this.grid[row][col].flag = !this.grid[row][col].flag
+        this.getCell(row, col).flag = !this.getCell(row, col).flag
+    }
+
+    this.getCell = function (row, col) {
+        return this.grid[row][col]
+    }
+
+    // return total number of flags
+    this.getFlags = function () {
+        let ret = 0
+        for (let row = 0; row < this.size; row++) {
+            for (let col = 0; col < this.size; col++) {
+                if (this.getCell(row, col).flag) ret += 1
+            }
+        }
+        return ret
     }
 
     // Returns the number of cells around the given cell which contain mines
@@ -71,8 +90,8 @@ function Game(size, numMines) {
 
             // don't check if out of bounds
             if (this.grid[rowOffset] !== undefined) {
-                if (this.grid[rowOffset][colOffset] !== undefined) {
-                    if (this.grid[rowOffset][colOffset].mine) ret += 1
+                if (this.getCell(rowOffset, colOffset) !== undefined) {
+                    if (this.getCell(rowOffset, colOffset).mine) ret += 1
                 }
             }
         })
@@ -83,10 +102,16 @@ function Game(size, numMines) {
     // ends game if mine
     // with no args passed, reveals current cell
     this.reveal = function (r, c) {
+        // hacky fix - do nothing if row or coll out of bounds
+        // not sure why i'm ever getting values that are though
+        // and i want to know why
+        if (r >= this.size - 1 || c >= this.size - 1) return
+
         const row = r | this.currentCell.row
         const col = c | this.currentCell.col
-        const cell = this.grid[row][col]
+        const cell = this.getCell(row, col)
         if (!cell.revealed) {
+            if (cell.flag) return // don't touch it
             if (cell.mine) this.loseGame()
             cell.revealed = true
 
@@ -114,7 +139,7 @@ function Game(size, numMines) {
 
             // don't check if out of bounds
             if (this.grid[rowOffset] !== undefined) {
-                if (this.grid[rowOffset][colOffset] !== undefined) {
+                if (this.getCell(rowOffset, colOffset) !== undefined) {
                     console.log(rowOffset + ', ' + colOffset)
                     this.reveal(rowOffset, colOffset)
                 }
@@ -122,22 +147,21 @@ function Game(size, numMines) {
         })
     }
 
-    // for debug/endgame
     this.revealAll = function () {
-        for (let row = 0; row < this.grid.length; row++) {
-            for (let col = 0; col < this.grid.length; col++) {
-                this.grid[row][col].revealed = true
+        for (let row = 0; row < this.size; row++) {
+            for (let col = 0; col < this.size; col++) {
+                this.getCell(row, col).revealed = true
             }
         }
     }
 
     this.toString = function () {
         let ret = ""
-        for (let row = 0; row < this.grid.length; row++) {
-            for (let col = 0; col < this.grid.length; col++) {
+        for (let row = 0; row < this.size; row++) {
+            for (let col = 0; col < this.size; col++) {
                 // first check if we display the cursor instead of the cell contents
                 if (row === this.currentCell.row && col === this.currentCell.col) {
-                    ret += "X"
+                    ret += "X "
                 } else {
                     const cell = this.grid[row][col]
                     if (!cell.revealed) {
@@ -146,6 +170,7 @@ function Game(size, numMines) {
                     } else {
                         cell.mine ? ret += '*' : ret += this.getNeighbors(row, col)
                     }
+                    ret += " "
                 }
             }
             ret += '\n'
@@ -156,7 +181,7 @@ function Game(size, numMines) {
     // accepts one of 'w' 's' 'a' 'd' 
     // moves wrap of edges of board
     this.translate = (action) => {
-        const maxIdx = this.grid.length - 1
+        const maxIdx = this.size - 1
         switch (action) {
             case 'w':
                 // go up
@@ -188,6 +213,10 @@ const g = new Game(9, 10)
 while (true) {
     console.log('NODESWEEPER')
     console.log('Grid:\n' + g)
+    const flags = g.getFlags()
+    const mines = g.numMines
+    console.log('Flags placed: ' + flags + (flags >= mines ? ' !!!!' : ''))
+    console.log('Mines to sweep: ' + mines)
     pressedKey = readLineSync.keyIn('W-UP S-DOWN A-LEFT D-RIGHT F-FLAG R-REVEAL X-REVEAL_ALL Q-QUIT', { limit: 'adfrswqx' })
     if (pressedKey == 'q') {
         process.exit()
@@ -197,8 +226,11 @@ while (true) {
         g.flag()
     } else if (pressedKey == 'r') {
         g.reveal()
+    } else if (pressedKey == 'x') {
+        g.revealAll()
     } else {
         console.log('unknown command')
     }
     console.clear()
+    g.checkWin()
 }
