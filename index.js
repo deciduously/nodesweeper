@@ -36,15 +36,23 @@ function Game(size, numMines) {
     this.currentCell = { row: 0, col: 0 }
     this.grid = buildGrid(size, numMines)
 
-    this.checkWin() = function () {
-        // TODO YOU'RE HERE
+    this.checkWin = function () {
+        // If the number of flags placed equals the number of mines placed
+        // and all those flags are actually on mines, the player wins
+        if (this.numMines === this.getFlags()) {
+            if (this.validateFlags()) {
+                this.endGame(true)
+            }
+        }
     }
 
-    this.loseGame = function () {
+    // accepts a bool, true if game was won
+    this.endGame = function (won) {
         this.revealAll()
+        this.currentCell = {} // for display purposes, get the cursor off the board
         console.clear()
         console.log(this.toString())
-        console.log('YOU LOSE')
+        console.log('YOU ' + (won ? 'WIN' : 'LOSE'))
         process.exit()
     }
 
@@ -56,6 +64,7 @@ function Game(size, numMines) {
     }
 
     this.getCell = function (row, col) {
+        if (this.grid[row] === undefined) return
         return this.grid[row][col]
     }
 
@@ -110,9 +119,10 @@ function Game(size, numMines) {
         const row = r | this.currentCell.row
         const col = c | this.currentCell.col
         const cell = this.getCell(row, col)
+        if (cell === {}) return
         if (!cell.revealed) {
             if (cell.flag) return // don't touch it
-            if (cell.mine) this.loseGame()
+            if (cell.mine) this.endGame(false) // false displays loss message
             cell.revealed = true
 
             // if we revealed a 0, call reveal on each neighbor
@@ -140,7 +150,7 @@ function Game(size, numMines) {
             // don't check if out of bounds
             if (this.grid[rowOffset] !== undefined) {
                 if (this.getCell(rowOffset, colOffset) !== undefined) {
-                    console.log(rowOffset + ', ' + colOffset)
+                    //console.log(rowOffset + ', ' + colOffset)
                     this.reveal(rowOffset, colOffset)
                 }
             }
@@ -180,7 +190,7 @@ function Game(size, numMines) {
 
     // accepts one of 'w' 's' 'a' 'd' 
     // moves wrap of edges of board
-    this.translate = (action) => {
+    this.translate = function (action) {
         const maxIdx = this.size - 1
         switch (action) {
             case 'w':
@@ -204,33 +214,47 @@ function Game(size, numMines) {
                 console.log('Unknown action')
         }
     }
+
+    // ensures every cell that's on a flag is a mine
+    this.validateFlags = function () {
+        // this is really a fold - look up how to write that
+        // assume true, if any arent return a false with (&&)
+        let ret = true
+        for (let row = 0; row < this.size; row++) {
+            for (let col = 0; col < this.size; col++) {
+                const cell = this.getCell(row, col)
+                // if it's not a flag, keep it true, we dont care
+                console.log('validating (' + row + ', ' + col + ')')
+                ret = ret && cell.flag ? cell.mine : true
+            }
+        }
+        return ret
+    }
 }
 
 // Beginner 9x9, 10 mines
 // Intermediate 16x16, 40 mines
-const g = new Game(9, 10)
+const g = new Game(9, 2)
 
 while (true) {
+    g.checkWin()
     console.log('NODESWEEPER')
     console.log('Grid:\n' + g)
     const flags = g.getFlags()
     const mines = g.numMines
     console.log('Flags placed: ' + flags + (flags >= mines ? ' !!!!' : ''))
     console.log('Mines to sweep: ' + mines)
-    pressedKey = readLineSync.keyIn('W-UP S-DOWN A-LEFT D-RIGHT F-FLAG R-REVEAL X-REVEAL_ALL Q-QUIT', { limit: 'adfrswqx' })
-    if (pressedKey == 'q') {
+    pressedKey = readLineSync.keyIn('W-UP S-DOWN A-LEFT D-RIGHT F-FLAG R-REVEAL Q-QUIT', { limit: 'adfrswq' })
+    if (pressedKey === 'q') {
         process.exit()
     } else if (['w', 'a', 's', 'd'].includes(pressedKey)) {
         g.translate(pressedKey)
-    } else if (pressedKey == 'f') {
+    } else if (pressedKey === 'f') {
         g.flag()
-    } else if (pressedKey == 'r') {
+    } else if (pressedKey === 'r') {
         g.reveal()
-    } else if (pressedKey == 'x') {
-        g.revealAll()
     } else {
         console.log('unknown command')
     }
     console.clear()
-    g.checkWin()
 }
